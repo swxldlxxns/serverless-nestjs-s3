@@ -3,7 +3,7 @@ import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { MemoryStoredFile } from 'nestjs-form-data';
 
 import { AppService } from '/opt/src/app.service';
-import { CreateRequestsDto } from '/opt/src/libs/interfaces/request/create-requests.dto';
+import { UploadRequestsDto } from '/opt/src/libs/interfaces/request/upload-requests.dto';
 import { S3Service } from '/opt/src/libs/services/s3.service';
 import { errorResponse, formatResponse } from '/opt/src/libs/utils';
 
@@ -26,7 +26,7 @@ describe('AppService', () => {
     Bucket: 'test',
     Key: 'test',
   };
-  const createDto: CreateRequestsDto = { file, name: 'test' };
+  const createDto: UploadRequestsDto = { file, name: 'test' };
   let service: AppService;
   let s3Service: S3Service;
 
