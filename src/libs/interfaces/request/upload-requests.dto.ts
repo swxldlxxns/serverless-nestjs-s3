@@ -4,7 +4,7 @@ import { MemoryStoredFile } from 'nestjs-form-data';
 
 import { CustomRules } from '/opt/src/libs/services/validation.service';
 
-export class CreateRequestsDto {
+export class UploadRequestsDto {
   @Validate(CustomRules)
   @Expose()
   readonly file: MemoryStoredFile;

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 
-import { CreateRequestsDto } from '/opt/src/libs/interfaces/request/create-requests.dto';
-import { CreateResponseInterface } from '/opt/src/libs/interfaces/response/create-response.interface';
+import { UploadRequestsDto } from '/opt/src/libs/interfaces/request/upload-requests.dto';
+import { UploadResponseInterface } from '/opt/src/libs/interfaces/response/upload-response.interface';
 import { S3Service } from '/opt/src/libs/services/s3.service';
 import { errorResponse, formatResponse } from '/opt/src/libs/utils';
 
@@ -15,11 +15,11 @@ export class AppService {
   async upload({
     file,
     name,
-  }: CreateRequestsDto): Promise<APIGatewayProxyResult> {
+  }: UploadRequestsDto): Promise<APIGatewayProxyResult> {
     try {
       const { Location: location }: ManagedUpload.SendData =
         await this._s3Service.upload(file, 'test', name, 'public-read');
-      return formatResponse<CreateResponseInterface>(
+      return formatResponse<UploadResponseInterface>(
         { location },
         SERVICE_NAME,
       );

@@ -1,11 +1,10 @@
 import { HttpStatus, INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { APIGatewayEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { StoredFile } from 'nestjs-form-data';
 
 import { AppModule } from '/opt/src/app.module';
 import { AppService } from '/opt/src/app.service';
-import { CreateRequestsDto } from '/opt/src/libs/interfaces/request/create-requests.dto';
+import { UploadRequestsDto } from '/opt/src/libs/interfaces/request/upload-requests.dto';
 import {
   errorResponse,
   errorsDto,
@@ -30,12 +29,7 @@ exports.handler = async function (
   const appService = app.get(AppService);
   const { file, fields } = await parseFormData(event);
   const request = { ...fields, file };
-  console.info({
-    SERVICE_NAME,
-    request,
-    x: file && file instanceof StoredFile,
-  });
-  const param = await validateDto(CreateRequestsDto, request);
+  const param = await validateDto(UploadRequestsDto, request);
   const errors = await errorsDto(param);
   if (errors.length)
     return errorResponse(
