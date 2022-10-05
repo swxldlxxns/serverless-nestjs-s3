@@ -1,0 +1,97 @@
+service: ${file(ServerlessScripts.js):stackName}-stack
+
+plugins:
+  - serverless-plugin-log-retention
+  - serverless-plugin-split-stacks
+  - serverless-domain-manager
+  - serverless-prune-plugin
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: ${file(ServerlessScripts.js):stage}
+  region: ${file(ServerlessScripts.js):region}
+  profile: ${file(ServerlessScripts.js):profile}
+  logRetentionInDays: ${file(ServerlessScripts.js):logRetentionInDays}
+  timeout: 29
+  environment:
+    NODE_PATH: ${file(ServerlessScripts.js):nodePath}
+    ACCOUNT_ID: ${aws:accountId}
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    BUCKET: ${self:resources.Resources.bucketTest.Properties.BucketName}
+  apiGateway:
+    binaryMediaTypes:
+      - 'multipart/form-data'
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource:
+            - {
+                'Fn::Join':
+                  ['', [{ 'Fn::GetAtt': ['bucketTest', 'Arn'] }, '/*']],
+              }
+custom:
+  modulesLayer: ${self:service}-${self:provider.stage}-modules
+  srcLayer: ${self:service}-${self:provider.stage}-src
+  prune:
+    automatic: true
+    includeLayers: true
+  splitStacks:
+    perFunction: true
+    perType: false
+    perGroupFunction: false
+  customDomain:
+    rest:
+      domainName: ${file(ServerlessScripts.js):domainName}
+      basePath: manage-files
+
+package:
+  individually: true
+  excludeDevDependencies: true
+
+layers:
+  modules:
+    name: ${self:custom.modulesLayer}
+    path: layers/modules
+    compatibleRuntimes:
+      - nodejs16.x
+  src:
+    name: ${self:custom.srcLayer}
+    path: layers/src
+    compatibleRuntimes:
+      - nodejs16.x
+
+functions:
+  upload:
+    handler: dist/handlers/upload/main.handler
+    package:
+      patterns:
+        - '!*/**'
+        - 'dist/handlers/upload/**'
+    layers:
+      - !Ref ModulesLambdaLayer
+      - !Ref SrcLambdaLayer
+    events:
+      - http:
+          method: post
+          path: /
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+resources:
+  Resources:
+    bucketTest:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${self:provider.stage}-test
