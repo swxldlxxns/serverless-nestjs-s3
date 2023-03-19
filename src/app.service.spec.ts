@@ -1,10 +1,13 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { S3 } from 'aws-sdk';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { MemoryStoredFile } from 'nestjs-form-data';
 
 import { AppService } from '/opt/src/app.service';
-import { UploadRequestsDto } from '/opt/src/libs/interfaces/request/upload-requests.dto';
+import { UploadRequestsDto } from '/opt/src/libs/dtos/requests/upload-requests.dto';
 import { S3Service } from '/opt/src/libs/services/s3.service';
+import { BUCKET } from '/opt/src/libs/shared/injectables';
 import { errorResponse, formatResponse } from '/opt/src/libs/utils';
 
 const SERVICE_NAME = 'AppService';
@@ -33,8 +36,27 @@ describe('AppService', () => {
   beforeEach(async () => {
     global.console = require('console');
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AppService, S3Service],
+      providers: [
+        AppService,
+        S3Service,
+        {
+          provide: ConfigService,
+          useFactory: () => ({
+            get: () => ({
+              accountId: process.env.ACCOUNT_ID,
+              stage: process.env.STAGE,
+              region: process.env.REGION,
+              bucket: process.env.BUCKET,
+            }),
+          }),
+        },
+        {
+          provide: BUCKET,
+          useValue: S3,
+        },
+      ],
     }).compile();
+
     service = module.get<AppService>(AppService);
     s3Service = module.get<S3Service>(S3Service);
   });

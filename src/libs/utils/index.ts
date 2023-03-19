@@ -21,14 +21,6 @@ export async function errorsDto(data): Promise<ValidationError[]> {
   return await validate(<object>(<unknown>data));
 }
 
-export function checkBody(body: any): object {
-  return isJsonString(body) ? JSON.parse(body) : {};
-}
-
-export function checkQueryParam(query: any): object {
-  return !isEmpty(query) ? query : {};
-}
-
 export function isJsonString(str: any): boolean {
   try {
     return !isEmpty(str) && isObject(JSON.parse(str));
@@ -42,7 +34,8 @@ export function formatResponse<T>(
   SERVICE_NAME: string,
   statusCode: HttpStatus = HttpStatus.OK,
 ): APIGatewayProxyResult {
-  console.info({ SERVICE_NAME, response });
+  log('INFO', { SERVICE_NAME, response });
+
   return {
     statusCode,
     body: JSON.stringify(response),
@@ -54,7 +47,8 @@ export function errorResponse(
   SERVICE_NAME: string,
   statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
 ): APIGatewayProxyResult {
-  console.error({ SERVICE_NAME, catchErrors });
+  log('ERROR', { SERVICE_NAME, catchErrors });
+
   return formatResponse(
     {
       errors: isJsonString(catchErrors.message)
@@ -66,19 +60,18 @@ export function errorResponse(
   );
 }
 
-export const parseFormData = async (
-  event: APIGatewayEvent,
-): Promise<{
+export async function parseFormData(event: APIGatewayEvent): Promise<{
   file?: MemoryStoredFile;
   fields: Record<string, any>;
-}> =>
-  new Promise((resolve) => {
+}> {
+  return new Promise((resolve) => {
     try {
       const busboy = BUSBOY({
         headers: { 'content-type': event.headers['Content-Type'] },
       });
       const fields: Record<string, any> = {};
       let uploadedFile: MemoryStoredFile;
+
       busboy.on('field', (fieldName, value) => {
         fields[fieldName] = value;
       });
@@ -86,6 +79,7 @@ export const parseFormData = async (
         const { filename: originalName, mimeType: mimetype, encoding } = info;
         let buffer;
         let size;
+
         file.on('data', (data) => {
           buffer = data;
           size = data.length;
@@ -118,3 +112,15 @@ export const parseFormData = async (
       });
     }
   });
+}
+
+export function log(type: 'INFO' | 'ERROR', data: object): void {
+  switch (type) {
+    case 'INFO':
+      console.info(data);
+      break;
+    case 'ERROR':
+      console.error(data);
+      break;
+  }
+}
