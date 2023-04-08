@@ -1,7 +1,7 @@
+import { S3 } from '@aws-sdk/client-s3';
+import { PutObjectCommandOutput } from '@aws-sdk/client-s3/dist-types/commands/PutObjectCommand';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { S3 } from 'aws-sdk';
-import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { MemoryStoredFile } from 'nestjs-form-data';
 
 import { S3Service } from '/opt/src/libs/services/s3.service';
@@ -15,11 +15,9 @@ describe('S3Service', () => {
     originalName: 'test',
     size: 1,
   };
-  const s3Result: ManagedUpload.SendData = {
-    Location: 'test',
+  const s3Result: PutObjectCommandOutput = {
     ETag: 'test',
-    Bucket: 'test',
-    Key: 'test',
+    $metadata: {},
   };
   let service: S3Service;
   let s3: S3;
@@ -53,9 +51,7 @@ describe('S3Service', () => {
   });
 
   it('should return s3 item', async () => {
-    s3.upload = jest.fn().mockImplementation(() => ({
-      promise: jest.fn().mockResolvedValue(s3Result),
-    }));
-    expect(await service.upload(file, 'test', 'test')).toEqual(s3Result);
+    s3.putObject = jest.fn().mockResolvedValue(s3Result);
+    expect(await service.upload(file.buffer, 'test', 'test')).toEqual(s3Result);
   });
 });
