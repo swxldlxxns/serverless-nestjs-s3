@@ -1,7 +1,7 @@
+import { S3 } from '@aws-sdk/client-s3';
+import { PutObjectCommandOutput } from '@aws-sdk/client-s3/dist-types/commands/PutObjectCommand';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { S3 } from 'aws-sdk';
-import { ManagedUpload } from 'aws-sdk/clients/s3';
 import { MemoryStoredFile } from 'nestjs-form-data';
 
 import { AppService } from '/opt/src/app.service';
@@ -23,11 +23,9 @@ describe('AppService', () => {
       return Promise.resolve(undefined);
     },
   };
-  const s3Result: ManagedUpload.SendData = {
-    Location: 'test',
+  const s3Result: PutObjectCommandOutput = {
     ETag: 'test',
-    Bucket: 'test',
-    Key: 'test',
+    $metadata: {},
   };
   const createDto: UploadRequestsDto = { file, name: 'test' };
   let service: AppService;
@@ -70,10 +68,13 @@ describe('AppService', () => {
     jest
       .spyOn(s3Service, 'upload')
       .mockImplementation(
-        async (): Promise<ManagedUpload.SendData> => Promise.resolve(s3Result),
+        async (): Promise<PutObjectCommandOutput> => Promise.resolve(s3Result),
       );
     expect(await service.upload(createDto)).toEqual(
-      formatResponse({ location: s3Result.Location }, SERVICE_NAME),
+      formatResponse<string>(
+        'https://test.s3.amazonaws.com/test/test',
+        SERVICE_NAME,
+      ),
     );
   });
 

@@ -1,6 +1,6 @@
+import { S3 } from '@aws-sdk/client-s3';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
-import { S3 } from 'aws-sdk';
 
 import { AppService } from '/opt/src/app.service';
 import config from '/opt/src/config';

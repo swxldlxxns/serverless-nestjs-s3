@@ -2,7 +2,7 @@
 
 
 # Description
-> This project is with Serverless Framework and NestJs, Serverless is with Lambdas functions and with lambda layers, while NestJs is without HTTP. It includes S3.
+> This project is with Serverless Framework and NestJs, Serverless is with Lambdas functions and with lambda layers, while NestJs is without HTTP. It includes S3. V3
 
 ## AWS
 
