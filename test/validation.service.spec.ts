@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ValidationArguments } from 'class-validator';
 import { MemoryStoredFile } from 'nestjs-form-data';
 
-import { CustomRules } from './validation.service';
+import { CustomRules } from '/opt/src/libs/services/validation.service';
 
 const imagesMimeTypes: string[] = ['image/jpeg', 'image/jpg', 'image/png'];
 
